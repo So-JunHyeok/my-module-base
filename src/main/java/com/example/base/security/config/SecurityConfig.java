@@ -1,5 +1,7 @@
 package com.example.base.security.config;
 
+import com.example.base.security.auth.provider.FormAuthenticationProvider;
+import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -16,38 +18,41 @@ import org.springframework.security.web.SecurityFilterChain;
  */
 @Configuration
 @EnableWebSecurity
+@RequiredArgsConstructor
 public class SecurityConfig {
+
+    private final FormAuthenticationProvider formAuthenticationProvider;
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
                 .csrf(csrf -> csrf.disable())
+                .authenticationProvider(formAuthenticationProvider)
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(
-                                "/login",
+                                "/admin/login",
                                 "/css/**",
                                 "/js/**",
                                 "/images/**"
                         ).permitAll()
-                        .anyRequest().authenticated()
+                        .requestMatchers("/admin/login").permitAll()
+                        .requestMatchers("/admin/**").authenticated()
+                        .anyRequest().permitAll()
                 )
                 .formLogin(form -> form
-                        .loginPage("/login")
-                        .defaultSuccessUrl("/main", true)
+                        .loginPage("/admin/login")          // GET
+                        .loginProcessingUrl("/admin/login") // POST
+                        .defaultSuccessUrl("/admin/dashboard", true)
                         .permitAll()
                 )
                 .logout(logout -> logout
                         .logoutUrl("/logout")
-                        .logoutSuccessUrl("/login?logout")
+                        .logoutSuccessUrl("/admin/login?logout")
                 );
 
         return http.build();
     }
 
-    @Bean
-    public PasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder();
-    }
 }
 
 
