@@ -14,9 +14,9 @@ import java.time.LocalDateTime;
 public class Board {
     @Id
     @GeneratedValue
-    int boardId;
+    Integer boardId;
 
-    String boardCode;
+    Integer boardCode;
     String title;
     String region;
     String content;
@@ -28,4 +28,16 @@ public class Board {
     String tel;
     LocalDateTime createdAt;
     LocalDateTime updatedAt;
+    private boolean pinned;
+    private LocalDateTime pinnedAt;
+
+    public void pin() {
+        this.pinned = true;
+        this.pinnedAt = LocalDateTime.now();
+    }
+
+    public void unpin() {
+        this.pinned = false;
+        this.pinnedAt = null;
+    }
 }

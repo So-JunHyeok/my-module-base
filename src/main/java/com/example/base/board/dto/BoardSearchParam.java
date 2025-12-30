@@ -6,10 +6,14 @@ import lombok.Data;
 public class BoardSearchParam {
 
     // 필수
+    private Integer boardId;
     private Integer boardCode;
 
     // 검색
     private String type;     // writer | content | email | tel | region
     private String keyword;
+
+    //페이지 상태
+    private int currentPage;
 
 }

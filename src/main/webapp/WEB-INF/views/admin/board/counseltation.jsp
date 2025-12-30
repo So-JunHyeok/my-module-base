@@ -60,13 +60,34 @@
                 </tr>
                 </thead>
                 <tbody>
+                <c:forEach var="pinBoard" items="${pinBoardList}" varStatus="status">
+                <tr class="notice-row">
+
+                    <td>📌</td>
+                    <td>${pinBoard.writer}</td>
+                    <td>${pinBoard.region}</td>
+                    <td><a href="/admin/counseltationDetail?boardId=${pinBoard.boardId}&boardCode=${pinBoard.boardCode}&currentPage=${page.number}&type=${param.type}&keyword=${param.keyword}">📋
+                        <c:choose>
+                            <c:when test="${fn:length(pinBoard.content) > 50}">
+                                ${fn:substring(pinBoard.content, 0, 50)}...
+                            </c:when>
+                            <c:otherwise>
+                                ${pinBoard.content}
+                            </c:otherwise>
+                        </c:choose>
+                    </a></td>
+                    <td>${pinBoard.tel}</td>
+                    <td>${pinBoard.email}</td>
+                    <td>${pinBoard.createdAt}</td>
+                </tr>
+                </c:forEach>
                 <c:forEach var="item" items="${page.content}" varStatus="status">
                     <c:set var="rowNum" value="${page.totalElements - (page.number * page.size) - status.index}" />
                     <tr class="notice-row">
                         <td>${rowNum}</td>
                         <td>${item.writer}</td>
                         <td>${item.region}</td>
-                        <td><a href="#">📌
+                        <td><a href="/admin/counseltationDetail?boardId=${item.boardId}&boardCode=${item.boardCode}&currentPage=${page.number}&type=${param.type}&keyword=${param.keyword}">📋
                             <c:choose>
                                 <c:when test="${fn:length(item.content) > 50}">
                                     ${fn:substring(item.content, 0, 50)}...

@@ -16,7 +16,7 @@
             <span class="nav-icon">📦</span>
             <span class="nav-text">시공 사례</span>
         </a>
-        <a href="/admin/counseltation" class="nav-item">
+        <a href="/admin/counseltation?boardCode=1" class="nav-item">
             <span class="nav-icon">📝</span>
             <span class="nav-text">상담 신청</span>
         </a>

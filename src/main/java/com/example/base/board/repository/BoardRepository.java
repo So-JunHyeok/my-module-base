@@ -7,27 +7,50 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 
+import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 
 public interface BoardRepository extends JpaRepository<Board, Long> {
 
+    /* 목록 */
     Page<Board> findByBoardCodeOrderByCreatedAtDesc(
-            String boardCode, Pageable pageable);
+            Integer boardCode, Pageable pageable);
 
     Page<Board> findByBoardCodeAndWriterContainingOrderByCreatedAtDesc(
-            String boardCode, String writer, Pageable pageable);
+            Integer boardCode, String writer, Pageable pageable);
 
     Page<Board> findByBoardCodeAndContentContainingOrderByCreatedAtDesc(
-            String boardCode, String content, Pageable pageable);
+            Integer boardCode, String content, Pageable pageable);
 
     Page<Board> findByBoardCodeAndEmailContainingOrderByCreatedAtDesc(
-            String boardCode, String email, Pageable pageable);
+            Integer boardCode, String email, Pageable pageable);
 
     Page<Board> findByBoardCodeAndTelContainingOrderByCreatedAtDesc(
-            String boardCode, String tel, Pageable pageable);
+            Integer boardCode, String tel, Pageable pageable);
 
     Page<Board> findByBoardCodeAndRegionContainingOrderByCreatedAtDesc(
-            String boardCode, String region, Pageable pageable);
+            Integer boardCode, String region, Pageable pageable);
+
+    /* 상세 */
+    Optional <Board> findByBoardIdAndBoardCode(int boardId, int boardCode);
+
+    // 이전글(아이디 기준)
+    Optional<Board> findFirstByBoardCodeAndBoardIdLessThanOrderByBoardIdDesc(int boardCode, Long boardId);
+
+    // 다음글(아이디 기준)
+    Optional<Board> findFirstByBoardCodeAndBoardIdGreaterThanOrderByBoardIdAsc(int boardCode, Long boardId);
+
+    // 이전글(등록일 기준)
+    Optional<Board> findFirstByBoardCodeAndCreatedAtBeforeOrderByCreatedAtDesc(int boardCode, LocalDateTime createdAt);
+
+    // 다음글(등록일 기준)
+    Optional<Board> findFirstByBoardCodeAndCreatedAtAfterOrderByCreatedAtAsc(int boardCode, LocalDateTime createdAt);
+
+    //고정글 관련
+    long countByBoardCodeAndPinnedTrue(int boardCode);
+
+    List<Board> findTop3ByBoardCodeAndPinnedTrueOrderByPinnedAtDesc(int boardCode);
 }
 
 /*
