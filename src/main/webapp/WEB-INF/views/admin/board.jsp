@@ -1,17 +1,12 @@
 <%@ page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
 <!DOCTYPE html>
-<html lang="ko">
-<head>
-    <meta charset="UTF-8" />
-    <title>상담신청 목록</title>
-    <link rel="stylesheet" href="/css/admin/dashboard.css" />
-</head>
-<body>
+
 <!DOCTYPE html>
 <html lang="ko">
 <head>
     <meta charset="UTF-8" />
     <title>게시판 관리</title>
+    <link rel="stylesheet" href="/css/admin/heard.css" />
     <link rel="stylesheet" href="/css/admin/board.css" />
 </head>
 <body>
@@ -96,6 +91,3 @@
 
 </body>
 </html>
-
-
-</body>

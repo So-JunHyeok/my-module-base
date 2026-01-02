@@ -138,6 +138,12 @@
         document.querySelector('input[name=page]').value = p;
         document.getElementById('searchForm').submit();
     }
+
+    document.getElementById("searchForm").addEventListener("keydown", function (e) {
+        if (e.key === "Enter") {
+            search();
+        }
+    });
 </script>
 </body>
 </html>

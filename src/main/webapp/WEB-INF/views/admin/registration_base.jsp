@@ -5,7 +5,7 @@
     <div class="modal-container">
         <div class="modal-header">
             <h3 class="modal-title"><c:out value="${param.title}"/></h3>
-            <button id="modal-bnt-close" class="modal-bnt-close" type="button">✕</button>
+            <button class="modal-bnt-close" type="button">✕</button>
         </div>
 
         <div class="modal-body" id="${param.groupCode}">
@@ -44,42 +44,36 @@
                 <textarea
                         class="form-textarea"
                         placeholder="내용을 입력하세요"
-                        rows="4"
+                        rows="10"
                 ></textarea>
             </div>
 
             <div class="form-group">
-                <label class="form-label">이미지 파일</label>
+                <label class="form-label">첨부파일</label>
                 <div class="file-upload-area">
-                    <input type="file" id="beforeFileInput" class="file-input"/>
-                    <label for="beforeFileInput" class="file-upload-label">
+                    <input type="file" id="file-input" class="file-input" multiple />
+                    <label for="file-input" class="file-upload-label">
                         <span class="upload-icon">📎</span>
-                        <span>Before 파일을 선택하거나 드래그하세요</span>
-                        <span class="file-info">최대 10MB</span>
-                    </label>
-                </div>
-                <div class="file-list" id="beforeFileList">
-                    <!-- 선택된 파일 목록 예시 -->
-                    <div class="file-item">
-                        <span class="file-name">📄 선택된 파일 없음.</span>
-                        <button class="file-remove" type="button"></button>
-                    </div>
-                </div>
-                <div class="file-upload-area">
-                    <input type="file" id="afterFileInput" class="file-input"/>
-                    <label for="afterFileInput" class="file-upload-label">
-                        <span class="upload-icon">📎</span>
-                        <span>After 파일을 선택하거나 드래그하세요</span>
-                        <span class="file-info">최대 10MB</span>
+                        <span>파일을 선택하거나 드래그하세요</span>
+                        <span class="file-info">최대 10MB, 최대 5개 파일</span>
                     </label>
                 </div>
 
-                <div class="file-list" id="afterFileList">
+                <div class="file-list">
                     <!-- 선택된 파일 목록 예시 -->
                     <div class="file-item">
-                        <span class="file-name">📄 선택된 파일 없음.</span>
-                        <button class="file-remove" type="button"></button>
+                        <span class="file-name">📄 example.pdf</span>
+                        <button class="file-remove" type="button">✕</button>
                     </div>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <div class="checkbox-group">
+                    <input type="checkbox" id="notice-check" class="form-checkbox" />
+                    <label for="notice-check" class="checkbox-label">
+                        공지사항으로 등록
+                    </label>
                 </div>
             </div>
 
@@ -94,18 +88,13 @@
         </div>
 
         <div class="modal-footer">
-            <button class="modal-btn btn-cancel" type="button" onclick="closeModal('partSelectModal')">취소</button>
+            <button class="modal-btn btn-cancel" type="button">취소</button>
+            <button class="modal-btn btn-save" type="button">임시저장</button>
             <button class="modal-btn btn-submit" type="button">등록하기</button>
         </div>
     </div>
 </div>
 <script>
-
-// 모달 오픈, 클로즈
-    document.getElementById('modal-bnt-close')
-        .addEventListener('click', function () {
-            closeModal('partSelectModal');
-        });
 
     document.getElementById('openModalBtn')
         .addEventListener('click', function () {
@@ -151,39 +140,4 @@
                 });
             });
     }
-
-    //첨부파일
-
-function renderSelectedFileNames(fileInputId, fileListId) {
-
-    const fileInput = document.getElementById(fileInputId);
-    const fileList = document.getElementById(fileListId);
-
-    fileList.innerHTML = '';
-    const item = document.createElement('div');
-    item.className = 'file-item';
-    if (fileInput.files.length === 0) {
-        item.innerHTML =`<span class="file-name">📄선택된 파일 없음.</span>
-            <button type="button" class="file-remove"></button>`;
-        fileList.appendChild(item);
-        return;
-    }
-    Array.from(fileInput.files).forEach(file => {
-        item.innerHTML = '<span class="file-name">📄'+file.name +'</span>'
-           + '<button type="button" class="file-remove"></button>';
-
-        fileList.appendChild(item);
-    });
-}
-
-document.getElementById('beforeFileInput')
-    .addEventListener('change', () => {
-        renderSelectedFileNames('beforeFileInput', 'beforeFileList');
-    });
-
-document.getElementById('afterFileInput')
-    .addEventListener('change', () => {
-        renderSelectedFileNames('afterFileInput', 'afterFileList');
-    });
-
 </script>

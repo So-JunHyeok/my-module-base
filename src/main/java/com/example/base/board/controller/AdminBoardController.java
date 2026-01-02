@@ -35,7 +35,6 @@ public class AdminBoardController {
     public String board() {
         return "admin/board";
     }
-
     @GetMapping("/counseltation")
     public String counseltation(BoardSearchParam boardParam, @PageableDefault(size = 10) Pageable pageable, Model model) {
 
@@ -77,6 +76,12 @@ public class AdminBoardController {
                 + (param.getType() != null ? "&type=" + param.getType() : "")
                 + (param.getKeyword() != null ? "&keyword=" + param.getKeyword() : "");
     }
+
+    @GetMapping("/construction")
+    public String construction() {
+        return "admin/board/construction";
+    }
+
 }
 /*
 Page<BoardResponse> page
