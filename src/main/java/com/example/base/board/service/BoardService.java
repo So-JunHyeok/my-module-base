@@ -1,13 +1,17 @@
 package com.example.base.board.service;
 
 import com.example.base.board.domain.Board;
+import com.example.base.board.dto.BoardWriteParam;
 import com.example.base.board.dto.CounseltationResult;
 import com.example.base.board.repository.BoardRepository;
+import com.example.base.security.auth.principal.CustomUserDetails;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+
+import java.io.IOException;
 import java.util.List;
 
 
@@ -95,4 +99,29 @@ public class BoardService {
 
         return CounseltationResult.from(data, prev, next);
     }
+    @Transactional
+    public void write(BoardWriteParam boardWritpeParam, CustomUserDetails loginUser)throws IOException {
+        Board board = Board.create(boardWritpeParam, loginUser);
+        boardRepository.save(board);
+    }
 }
+
+
+/*
+Builder 패턴 (필드가 많을떄) * 생성 규칙이 있는 도메인에서는 create()가 더 좋다
+Board board = Board.builder()
+        .boardCode(param.getBoardCode())
+        .title(param.getTitle())
+        .region(param.getRegion())
+        .content(param.getContent())
+        .writer(loginUser.getUserId())
+        .email(param.getEmail())
+        .tel(param.getTel())
+        .secretYn(param.getSecretYn())
+        .status("NORMAL")
+        .viewCount(0)
+        .build();
+
+        @Transactional
+        예외 발생시 롤백
+ */

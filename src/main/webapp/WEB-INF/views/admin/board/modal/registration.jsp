@@ -34,7 +34,7 @@
                 <input
                         type="text"
                         class="form-input"
-                        value="관리자"
+                        value="${loginUser.username}"
                         disabled
                 />
             </div>

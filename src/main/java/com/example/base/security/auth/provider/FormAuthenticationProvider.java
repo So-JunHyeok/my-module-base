@@ -4,6 +4,7 @@ import com.example.base.security.auth.AuthService;
 import com.example.base.security.auth.AuthType;
 import com.example.base.security.auth.dto.AuthRequest;
 import com.example.base.security.auth.dto.AuthResult;
+import com.example.base.security.auth.principal.CustomUserDetails;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -31,11 +32,15 @@ public class FormAuthenticationProvider implements AuthenticationProvider {
                 new AuthRequest(username, password, AuthType.FORM, null)
         );
 
-        return new UsernamePasswordAuthenticationToken(
-                result.getUserId(),
-                null,
-                List.of(new SimpleGrantedAuthority("ROLE_ADMIN"))
-        );
+        CustomUserDetails userDetails =
+                new CustomUserDetails(
+                        result.getUserId(),
+                        result.getUserName(),   // 로그인 ID
+                        result.getName(),       // 사용자 이름
+                        result.getRole()        // ex) ROLE_ADMIN
+                );
+
+        return new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
     }
 
     @Override

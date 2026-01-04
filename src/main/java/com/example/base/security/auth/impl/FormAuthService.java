@@ -31,7 +31,7 @@ public class FormAuthService implements AuthService {
         if(!passwordEncoder.matches(request.getPassword(), user.getPassword()))
             throw new RuntimeException("비밀번호 불일치");
 
-        return AuthResult.success(user.getUserId());
+        return AuthResult.success(user.getId(), user.getUserId(), "괸리자", user.getRole());
     }
 
 }

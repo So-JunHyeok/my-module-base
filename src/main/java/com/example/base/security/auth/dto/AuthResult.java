@@ -1,5 +1,6 @@
 package com.example.base.security.auth.dto;
 
+import com.example.base.security.auth.AuthType;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 
@@ -7,10 +8,21 @@ import lombok.Data;
 @AllArgsConstructor
 public class AuthResult {
     private boolean success;
-    private String userId;
+    private Long userId;
+    private String userName;
+    private String name;
+    private String role;
 
-    public static AuthResult success(String userId){
-        return new AuthResult(true, userId);
+
+
+    public static AuthResult success(Long userId, String userName, String name, String role){
+        return new AuthResult(
+                true,
+                userId,
+                userName,
+                name,
+                role
+        );
     }
 }
 

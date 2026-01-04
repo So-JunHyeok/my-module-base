@@ -2,6 +2,7 @@ package com.example.base.board.controller;
 
 import com.example.base.board.domain.BoardCode;
 import com.example.base.board.dto.BoardSearchParam;
+import com.example.base.board.dto.BoardWriteParam;
 import com.example.base.board.dto.CounseltationResult;
 import com.example.base.board.service.BoardCodeService;
 import com.example.base.board.service.BoardService;
@@ -80,6 +81,11 @@ public class AdminBoardController {
     @GetMapping("/construction")
     public String construction() {
         return "admin/board/construction";
+    }
+
+    @PostMapping
+    public String constructionRegistation(BoardWriteParam boardWriteParam){
+        return "";
     }
 
 }

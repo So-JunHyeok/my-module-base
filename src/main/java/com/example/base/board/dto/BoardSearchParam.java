@@ -10,10 +10,12 @@ public class BoardSearchParam {
     private Integer boardCode;
 
     // 검색
-    private String type;     // writer | content | email | tel | region
+    private String type;
     private String keyword;
 
     //페이지 상태
     private int currentPage;
+
+    // writer | content | email | tel | region : 상속으로 구현
 
 }
