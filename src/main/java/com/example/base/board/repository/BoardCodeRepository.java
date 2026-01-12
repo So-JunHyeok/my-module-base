@@ -7,5 +7,5 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.Optional;
 
 public interface BoardCodeRepository extends JpaRepository<BoardCode, Long> {
-   Optional<BoardCode> findByBoardCode(int boardCode);
+   Optional<BoardCode> findByBoardCode(String boardCode);
 }

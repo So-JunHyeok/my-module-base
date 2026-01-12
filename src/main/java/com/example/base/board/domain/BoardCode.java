@@ -1,10 +1,6 @@
 package com.example.base.board.domain;
 
-import com.example.base.board.dto.CounseltationResult;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.Getter;
 
 import java.time.LocalDateTime;
@@ -14,9 +10,9 @@ import java.time.LocalDateTime;
 @Table(name = "tb_board_code")
 public class BoardCode {
     @Id
-    @GeneratedValue
-    private int boardCode;
-
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private String boardCode;
+    private String boardType;
     private String boardName;
     private String useYn;
     private int sortOrder;

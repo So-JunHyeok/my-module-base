@@ -1,11 +1,9 @@
 package com.example.base.board.domain;
 
+import com.example.base.board.domain.command.BoardCommand;
 import com.example.base.board.dto.BoardWriteParam;
 import com.example.base.security.auth.principal.CustomUserDetails;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.Getter;
 
 import java.time.LocalDateTime;
@@ -15,39 +13,34 @@ import java.time.LocalDateTime;
 @Table(name = "tb_board")
 public class Board {
     @Id
-    @GeneratedValue
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer boardId;
 
-    private Integer boardCode;
+    private String boardCode;
     private String title;
-    private String region;
     private String content;
     private String writer;
     private int view_count;
     private String status;
     private String secretYn;
-    private String email;
-    private String tel;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
     private boolean pinned;
     private LocalDateTime pinnedAt;
     private String category;
 
-    public static Board create(BoardWriteParam param, CustomUserDetails user){
+    public static Board create(BoardCommand command, CustomUserDetails user){
         Board board = new Board();
-        board.boardCode = param.getBoardCode();
-        board.title = param.getTitle();
-        board.content = param.getContent();
+        board.boardCode = command.getBoardCode();
+        board.title = command.getTitle();
+        board.content = command.getContent();
         board.writer = user.getUsername();
         board.status = "OPEN";
         board.secretYn = "N";
-        board.email = param.getEmail();
-        board.tel = param.getTel();
         board.view_count = 0;
         board.pinned = false;
         board.createdAt = LocalDateTime.now();
-        board.category = param.getCategory();
+        board.category = command.getCategory();
 
         return board;
     }
@@ -66,4 +59,6 @@ public class Board {
 /*
 static 은 객체생성없이 사용가능 따라서 해당 메소드를 통해서 객체를 생성하도록 제한하는것이다.
 - 그래야 미완성 객체를 방지
+
+   @GeneratedValue(strategy = GenerationType.IDENTITY) 데이터베이스 자동증가라면 해당 옵션 추가
  */

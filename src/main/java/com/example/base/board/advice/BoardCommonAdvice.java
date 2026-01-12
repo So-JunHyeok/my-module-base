@@ -13,15 +13,15 @@ public class BoardCommonAdvice {
 
     private final BoardCodeService boardCodeService;
 
-    private static final int DEFAULT_BOARD_CODE = 1;
+    private static final String DEFAULT_BOARD_CODE = "notice";
 
 
     @ModelAttribute("boardCode")
     public BoardCode boardCode(
-            @RequestParam(value = "boardCode", required = false) Integer boardCode
+            @RequestParam(value = "boardCode", required = false) String boardCode
     ) {
 
-        int resolvedCode =
+        String resolvedCode =
                 (boardCode == null)
                         ? DEFAULT_BOARD_CODE
                         : boardCode;

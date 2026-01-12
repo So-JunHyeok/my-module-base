@@ -12,11 +12,11 @@
             <span class="nav-icon">👥</span>
             <span class="nav-text">사용자 관리</span>
         </a>
-        <a href="/admin/board" class="nav-item">
+        <a href="/admin/board/constructCase/list" class="nav-item">
             <span class="nav-icon">📦</span>
             <span class="nav-text">시공 사례</span>
         </a>
-        <a href="/admin/counseltation?boardCode=1" class="nav-item">
+        <a href="/admin/consultations/installation" class="nav-item">
             <span class="nav-icon">📝</span>
             <span class="nav-text">상담 신청</span>
         </a>

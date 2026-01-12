@@ -14,28 +14,28 @@ import java.time.LocalDateTime;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class BoardFile {
     @Id
-    @GeneratedValue
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer fileId;
-
-    private Integer boardId;
-    private Integer boardCode;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "board_id")
+    private Board board;
 
     @Enumerated(EnumType.STRING)
     private FileType fileType;
 
     private String fileName;
-    private String filePath;
+    private String fileOriginName;
     private LocalDateTime createdAt;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "board_id")
-    private Board board;
 
-    public static BoardFile create(Board board, BoardWriteParam param, FileType fileType){
+
+    public static BoardFile create(Board board, FileType fileType, String fileName, String fileOriginName){
         BoardFile file = new BoardFile();
         file.board = board;
         file.fileType = fileType;
-        file.fileName = param.getAfterFile().getOriginalFilename();
+        file.fileName = fileName;
+        file.fileOriginName = fileOriginName;
+        file.createdAt = LocalDateTime.now();
         return file;
     }
 

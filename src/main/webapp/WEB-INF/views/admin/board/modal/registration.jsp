@@ -3,6 +3,7 @@
 <!-- Modal Popup - 새 글 작성 -->
 <div class="modal-close" id="${param.modalId}">
     <div class="modal-container">
+        <form method="post" id="writeForm" name="writeForm" action="/admin/construction/write" enctype="multipart/form-data">
         <div class="modal-header">
             <h3 class="modal-title"><c:out value="${param.title}"/></h3>
             <button id="modal-bnt-close" class="modal-bnt-close" type="button">✕</button>
@@ -10,8 +11,8 @@
 
         <div class="modal-body" id="${param.groupCode}">
             <div class="form-group">
-                <label class="form-label">시공 파트 *</label>
-                <select class="form-select" id="form-select">
+                <label class="form-label" for="form-select">시공 파트 *</label>
+                <select class="form-select" name="category" id="form-select">
                     <option>카테고리를 선택하세요</option>
                     <option>공지사항</option>
                     <option>자유게시판</option>
@@ -25,6 +26,7 @@
                 <input
                         type="text"
                         class="form-input"
+                        name="title"
                         placeholder="제목을 입력하세요"
                 />
             </div>
@@ -34,8 +36,9 @@
                 <input
                         type="text"
                         class="form-input"
+                        name="writer"
                         value="${loginUser.username}"
-                        disabled
+                        readonly
                 />
             </div>
 
@@ -43,6 +46,7 @@
                 <label class="form-label">내용 *</label>
                 <textarea
                         class="form-textarea"
+                        name="content"
                         placeholder="내용을 입력하세요"
                         rows="4"
                 ></textarea>
@@ -51,7 +55,7 @@
             <div class="form-group">
                 <label class="form-label">이미지 파일</label>
                 <div class="file-upload-area">
-                    <input type="file" id="beforeFileInput" class="file-input"/>
+                    <input type="file" id="beforeFileInput" name="files" class="file-input"/>
                     <label for="beforeFileInput" class="file-upload-label">
                         <span class="upload-icon">📎</span>
                         <span>Before 파일을 선택하거나 드래그하세요</span>
@@ -66,7 +70,7 @@
                     </div>
                 </div>
                 <div class="file-upload-area">
-                    <input type="file" id="afterFileInput" class="file-input"/>
+                    <input type="file" id="afterFileInput" name="files" class="file-input"/>
                     <label for="afterFileInput" class="file-upload-label">
                         <span class="upload-icon">📎</span>
                         <span>After 파일을 선택하거나 드래그하세요</span>
@@ -95,9 +99,12 @@
 
         <div class="modal-footer">
             <button class="modal-btn btn-cancel" type="button" onclick="closeModal('partSelectModal')">취소</button>
-            <button class="modal-btn btn-submit" type="button">등록하기</button>
+            <button class="modal-btn btn-submit" type="submit">등록하기</button>
         </div>
+            <input type="hidden" name="boardCode" value="2">
+        </form>
     </div>
+
 </div>
 <script>
 

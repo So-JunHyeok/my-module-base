@@ -2,21 +2,17 @@ package com.example.base.board.dto;
 
 import com.example.base.board.domain.Board;
 import lombok.AllArgsConstructor;
-import lombok.Data;
 import lombok.Getter;
 
 import java.time.LocalDateTime;
 
 @Getter
 @AllArgsConstructor
-public class CounseltationResult {
+public class BoardResponse {
     private Integer boardId;
-    private Integer boardCode;
+    private String boardCode;
     private String writer;
     private String content;
-    private String email;
-    private String tel;
-    private String region;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
     private boolean pinned;
@@ -25,15 +21,12 @@ public class CounseltationResult {
     private SimpleBoard next;
 
 
-    public static CounseltationResult from(Board board) {
-        return new CounseltationResult(
+    public static BoardResponse from(Board board) {
+        return new BoardResponse(
                 board.getBoardId(),
                 board.getBoardCode(),
                 board.getWriter(),
                 board.getContent(),
-                board.getEmail(),
-                board.getTel(),
-                board.getRegion(),
                 board.getCreatedAt(),
                 board.getUpdatedAt(),
                 board.isPinned(),
@@ -42,15 +35,12 @@ public class CounseltationResult {
                 null
         );
     }
-    public static CounseltationResult from(Board board, Board prev, Board next) {
-        return new CounseltationResult(
+    public static BoardResponse from(Board board, Board prev, Board next) {
+        return new BoardResponse(
                 board.getBoardId(),
                 board.getBoardCode(),
                 board.getWriter(),
                 board.getContent(),
-                board.getEmail(),
-                board.getTel(),
-                board.getRegion(),
                 board.getCreatedAt(),
                 board.getUpdatedAt(),
                 board.isPinned(),

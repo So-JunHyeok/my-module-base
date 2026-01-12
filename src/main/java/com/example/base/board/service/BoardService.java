@@ -1,19 +1,29 @@
 package com.example.base.board.service;
 
 import com.example.base.board.domain.Board;
+import com.example.base.board.domain.BoardFile;
+import com.example.base.board.domain.FileType;
+import com.example.base.board.domain.command.BoardCommand;
 import com.example.base.board.dto.BoardWriteParam;
-import com.example.base.board.dto.CounseltationResult;
+import com.example.base.board.dto.BoardResponse;
+import com.example.base.board.repository.BoardFileRepository;
 import com.example.base.board.repository.BoardRepository;
+import com.example.base.common.config.FilePathProperties;
 import com.example.base.security.auth.principal.CustomUserDetails;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.List;
-
+import java.util.UUID;
 
 
 @Service
@@ -21,21 +31,22 @@ import java.util.List;
 public class BoardService {
 
     private final BoardRepository boardRepository;
-
-    public Page<CounseltationResult> conuseltationList(Integer boardCode, Pageable pageable){
+    private final BoardFileRepository boardFileRepository;
+    private final FilePathProperties filePathProperties;
+    public Page<BoardResponse> boardList(String boardCode, Pageable pageable){
         return boardRepository.findByBoardCodeOrderByCreatedAtDesc(boardCode, pageable)
-                .map(CounseltationResult :: from);
+                .map(BoardResponse:: from);
     }
     /* 고정글 */
-    public List<CounseltationResult> pinBoardList(Integer boardCode){
+    public List<BoardResponse> pinBoardList(String boardCode){
         return boardRepository.findTop3ByBoardCodeAndPinnedTrueOrderByPinnedAtDesc(boardCode)
                 .stream()
-                .map(CounseltationResult::from)
+                .map(BoardResponse::from)
                 .toList();   // Java 16+
     }
 
     @Transactional
-    public boolean togglePin(int boardId, int boardCode) {
+    public boolean togglePin(int boardId, String boardCode) {
 
         Board board = boardRepository.findByBoardIdAndBoardCode(boardId, boardCode)
                 .orElseThrow(() -> new IllegalArgumentException("글 없음"));
@@ -56,35 +67,26 @@ public class BoardService {
         return true;
     }
 
-    public Page<CounseltationResult> conuseltationSearch(Integer boardCode, String searchType, String keyword, Pageable pageable){
+    public Page<BoardResponse> conuseltationSearch(String boardCode, String searchType, String keyword, Pageable pageable){
         if (keyword == null || keyword.isBlank()) {
             return boardRepository.findByBoardCodeOrderByCreatedAtDesc(boardCode, pageable)
-                    .map(CounseltationResult :: from);
+                    .map(BoardResponse:: from);
         }
 
         switch (searchType) {
             case "writer" :
                 return boardRepository.findByBoardCodeAndWriterContainingOrderByCreatedAtDesc(boardCode, keyword, pageable)
-                        .map(CounseltationResult :: from);
+                        .map(BoardResponse:: from);
             case "content" :
                 return boardRepository.findByBoardCodeAndContentContainingOrderByCreatedAtDesc(boardCode, keyword, pageable)
-                        .map(CounseltationResult :: from);
-            case "email" :
-                return boardRepository.findByBoardCodeAndEmailContainingOrderByCreatedAtDesc(boardCode, keyword, pageable)
-                        .map(CounseltationResult :: from);
-            case "tel" :
-                return boardRepository.findByBoardCodeAndTelContainingOrderByCreatedAtDesc(boardCode, keyword, pageable)
-                        .map(CounseltationResult :: from);
-            case "region" :
-                return boardRepository.findByBoardCodeAndRegionContainingOrderByCreatedAtDesc(boardCode, keyword, pageable)
-                        .map(CounseltationResult :: from);
+                        .map(BoardResponse:: from);
             default:
                 return boardRepository.findByBoardCodeOrderByCreatedAtDesc(boardCode, pageable)
-                        .map(CounseltationResult :: from);
+                        .map(BoardResponse:: from);
         }
     }
 
-    public CounseltationResult conuseltationData(int boardId, int boardCode){
+    public BoardResponse conuseltationData(int boardId, String boardCode){
 
         Board data = boardRepository.findByBoardIdAndBoardCode(boardId, boardCode)
                .orElseThrow(() -> new IllegalArgumentException("상담글 없음"));
@@ -97,12 +99,73 @@ public class BoardService {
                 .findFirstByBoardCodeAndCreatedAtAfterOrderByCreatedAtAsc(boardCode, data.getCreatedAt())
                 .orElse(null);
 
-        return CounseltationResult.from(data, prev, next);
+        return BoardResponse.from(data, prev, next);
     }
     @Transactional
-    public void write(BoardWriteParam boardWritpeParam, CustomUserDetails loginUser)throws IOException {
-        Board board = Board.create(boardWritpeParam, loginUser);
+    public void write(BoardWriteParam param, CustomUserDetails loginUser)throws IOException {
+
+        BoardCommand boardCommand = BoardCommand.boardWrite(
+                param.getBoardCode(),
+                param.getTitle(),
+                param.getContent(),
+                param.getWriter(),
+                param.getCategory()
+        );
+
+        Board board = Board.create(boardCommand, loginUser);
         boardRepository.save(board);
+
+        if(param.getFiles() == null && param.getFiles().isEmpty()) return;
+
+        List<String> savedFiles = new ArrayList<>();
+        try {
+            for (MultipartFile file : param.getFiles()){
+
+                String savedFileName = saveFile(file);
+                savedFiles.add(savedFileName);
+
+                BoardFile boardFile = BoardFile.create(
+                        board,
+                        FileType.AFTER,
+                        savedFileName,
+                        file.getOriginalFilename()
+                );
+                boardFileRepository.save(boardFile);
+            }
+        } catch (Exception e) {
+            // 파일 롤백
+            for (String savedFile : savedFiles) {
+                try {
+                    Files.deleteIfExists(
+                            Paths.get(filePathProperties.getBoard(), savedFile)
+                    );
+                } catch (IOException ignore) {}
+            }
+            throw e;
+        }
+
+    }
+
+    private void handleDefaultFiles(Board board, BoardWriteParam param){
+
+    }
+
+    private String saveFile(MultipartFile file)throws IOException{
+        String uploadDir = filePathProperties.getBoard();
+        Files.createDirectories(Paths.get(uploadDir));
+        String originalName = file.getOriginalFilename();
+        String ext = "";
+        int dotIndex = originalName.lastIndexOf(".");
+        if (dotIndex != -1) {
+            ext = originalName.substring(dotIndex);
+        }
+
+        String savedName = UUID.randomUUID() + ext;
+
+        Path savePath = Paths.get(uploadDir, savedName);
+        file.transferTo(savePath.toFile());
+
+        return savedName;
     }
 }
 

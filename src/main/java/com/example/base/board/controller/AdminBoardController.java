@@ -1,11 +1,13 @@
 package com.example.base.board.controller;
 
 import com.example.base.board.domain.BoardCode;
+import com.example.base.board.dto.BoardResponse;
 import com.example.base.board.dto.BoardSearchParam;
 import com.example.base.board.dto.BoardWriteParam;
-import com.example.base.board.dto.CounseltationResult;
 import com.example.base.board.service.BoardCodeService;
 import com.example.base.board.service.BoardService;
+import com.example.base.consultation.dto.ConsultationResult;
+import com.example.base.security.auth.principal.CustomUserDetails;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -13,50 +15,42 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-
 import java.util.List;
-import java.util.Optional;
+
 
 @Slf4j
 @Controller
 @RequiredArgsConstructor
-@RequestMapping("/admin")
+@RequestMapping("/admin/board")
 public class AdminBoardController {
 
     private final BoardService boardService;
     private final BoardCodeService boardCodeService;
 
-    @GetMapping("/board")
-    public String board() {
-        return "admin/board";
-    }
-    @GetMapping("/counseltation")
-    public String counseltation(BoardSearchParam boardParam, @PageableDefault(size = 10) Pageable pageable, Model model) {
 
-        Page<CounseltationResult> page = boardService.conuseltationSearch(boardParam.getBoardCode(),boardParam.getType(), boardParam.getKeyword(), pageable);
+    @GetMapping("/{boardCode}/list")
+    public String boardList(@PathVariable String boardCode, @PageableDefault(size = 10) Pageable pageable, BoardSearchParam param, Model model) {
+        BoardCode code = boardCodeService.findBoardDetail(boardCode)
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 게시판 코드"));
+
+        Page<BoardResponse> page = boardService.boardList(boardCode, pageable);
+        List<BoardResponse> pinBoardList = boardService.pinBoardList(boardCode);
+
         model.addAttribute("page", page);
-        List<CounseltationResult> pinBoardList = boardService.pinBoardList(boardParam.getBoardCode());
         model.addAttribute("pinBoardList", pinBoardList);
-        return "admin/board/counseltation";
+
+        return resolveListView(code.getBoardType());
     }
 
-    @GetMapping("/counseltationDetail")
-    public String counseltationDetail(BoardSearchParam boardParam, Model model) {
-        boardParam.setBoardCode(1);
-        CounseltationResult data = boardService.conuseltationData(boardParam.getBoardId(), boardParam.getBoardCode());
-        model.addAttribute("data", data);
-        model.addAttribute("boardParam",boardParam);
-        log.info("DETAIL data = {}", data);
-        log.info("prev = {}", data.getPrev());
-        log.info("next = {}", data.getNext());
-
-        return "admin/board/counseltationDetail";
+    @PostMapping("/{boardCode}/write")
+    public String constructionRegistation(@PathVariable String boardCode, BoardWriteParam boardWriteParam, CustomUserDetails loginUser) throws Exception{
+        String path = "admin/board/" + boardCode + "/list";
+        boardWriteParam.setBoardCode(boardCode);
+        boardService.write(boardWriteParam, loginUser);
+        return "redirect:/" + path;
     }
 
     @PostMapping("/pinned")
@@ -71,24 +65,27 @@ public class AdminBoardController {
                 pinned ? "고정되었습니다." : "고정 해제되었습니다."
         );
 
-        return "redirect:/admin/counseltationDetail"
+        return "redirect:/admin/counseltation/detail"
                 + "?boardId=" + param.getBoardId()
                 + "&currentPage=" + param.getCurrentPage()
                 + (param.getType() != null ? "&type=" + param.getType() : "")
                 + (param.getKeyword() != null ? "&keyword=" + param.getKeyword() : "");
     }
 
-    @GetMapping("/construction")
-    public String construction() {
-        return "admin/board/construction";
-    }
 
-    @PostMapping
-    public String constructionRegistation(BoardWriteParam boardWriteParam){
-        return "";
-    }
+    private String resolveListView(String boardType){
 
+        String path = "admin/board/";
+
+        switch (boardType){
+            case "GALLERY" : return path + "list_gallery";
+            default: return path + "list_text";
+        }
+    }
 }
+
+
+
 /*
 Page<BoardResponse> page
 │

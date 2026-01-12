@@ -15,7 +15,7 @@ public class BoardCodeService {
 
     private final BoardCodeRepository boardCodeRepository;
 
-    public Optional<BoardCode> findBoardDetail(int boardCode){
+    public Optional<BoardCode> findBoardDetail(String boardCode){
             return boardCodeRepository.findByBoardCode(boardCode);
     }
 }

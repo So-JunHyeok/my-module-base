@@ -7,7 +7,7 @@ public class BoardSearchParam {
 
     // 필수
     private Integer boardId;
-    private Integer boardCode;
+    private String boardCode;
 
     // 검색
     private String type;
