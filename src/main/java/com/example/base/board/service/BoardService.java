@@ -10,11 +10,11 @@ import com.example.base.board.repository.BoardFileRepository;
 import com.example.base.board.repository.BoardRepository;
 import com.example.base.common.config.FilePathProperties;
 import com.example.base.security.auth.principal.CustomUserDetails;
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
@@ -101,7 +101,7 @@ public class BoardService {
 
         return BoardResponse.from(data, prev, next);
     }
-    @Transactional
+    @Transactional(rollbackFor = Exception.class)
     public void write(BoardWriteParam param, CustomUserDetails loginUser)throws IOException {
 
         BoardCommand boardCommand = BoardCommand.boardWrite(
@@ -115,45 +115,102 @@ public class BoardService {
         Board board = Board.create(boardCommand, loginUser);
         boardRepository.save(board);
 
-        if(param.getFiles() == null && param.getFiles().isEmpty()) return;
+        handleDefaultFiles(board, param);
+
+    }
+
+    private void handleDefaultFiles(Board board, BoardWriteParam param) throws IOException{
+        if ("constructCase".equals(board.getBoardCode())) {
+            saveBeforeAfterFileInfo(board, param);
+        } else {
+            saveFilesInfo(board, param);
+        }
+    }
+
+    private void saveFilesInfo(Board board, BoardWriteParam param)throws IOException{
+        if(param.getFiles() == null || param.getFiles().isEmpty()) return;
 
         List<String> savedFiles = new ArrayList<>();
         try {
-            for (MultipartFile file : param.getFiles()){
-
-                String savedFileName = saveFile(file);
-                savedFiles.add(savedFileName);
-
+            for(MultipartFile file : param.getFiles()){
+                String saveFileName = saveFile(file);
                 BoardFile boardFile = BoardFile.create(
                         board,
-                        FileType.AFTER,
-                        savedFileName,
+                        FileType.ATTACHMENT,
+                        saveFileName,
                         file.getOriginalFilename()
                 );
                 boardFileRepository.save(boardFile);
+                savedFiles.add(saveFileName);
             }
-        } catch (Exception e) {
-            // 파일 롤백
-            for (String savedFile : savedFiles) {
+        }catch (Exception e){
+            for (String file : savedFiles) {
                 try {
                     Files.deleteIfExists(
-                            Paths.get(filePathProperties.getBoard(), savedFile)
+                            Paths.get(filePathProperties.getBoard()).resolve(file)
                     );
-                } catch (IOException ignore) {}
+                }catch (IOException ignored){}
             }
             throw e;
         }
-
     }
 
-    private void handleDefaultFiles(Board board, BoardWriteParam param){
+    private void saveBeforeAfterFileInfo(Board board, BoardWriteParam param)throws IOException{
+        if(param.getBeforeFile() == null || param.getBeforeFile().isEmpty()) return;
+        if(param.getAfterFile() == null || param.getAfterFile().isEmpty()) return;
 
+        List<String> savedFiles = new ArrayList<>();
+
+        try {
+            MultipartFile beforeFile = param.getBeforeFile();
+            MultipartFile afterFile = param.getAfterFile();
+
+            String savedBeforeFileName = saveFile(beforeFile);
+            String savedAfterFileName = saveFile(afterFile);
+
+            BoardFile boardBeforeFile = BoardFile.create(
+                    board,
+                    FileType.BEFORE,
+                    savedBeforeFileName,
+                    beforeFile.getOriginalFilename()
+            );
+            boardFileRepository.save(boardBeforeFile);
+            savedFiles.add(savedBeforeFileName);
+
+            BoardFile boardAfterFile = BoardFile.create(
+                    board,
+                    FileType.AFTER,
+                    savedAfterFileName,
+                    afterFile.getOriginalFilename()
+            );
+            boardFileRepository.save(boardAfterFile);
+            savedFiles.add(savedAfterFileName);
+
+        }catch (Exception e){
+            //파일 수동 롤백
+            // 파일 저장 실패 시 RuntimeException 발생 → 트랜잭션 롤백
+            // 파일 시스템은 트랜잭션 대상이 아니므로 수동 롤백 처리
+            for (String file : savedFiles) {
+                try {
+                    Files.deleteIfExists(
+                            Paths.get(filePathProperties.getBoard()).resolve(file)
+                    );
+                }catch (IOException ignored){}
+            }
+            throw e;
+        }
     }
+
 
     private String saveFile(MultipartFile file)throws IOException{
         String uploadDir = filePathProperties.getBoard();
         Files.createDirectories(Paths.get(uploadDir));
         String originalName = file.getOriginalFilename();
+
+        if (originalName == null) {
+            throw new IllegalArgumentException("파일명이 없습니다.");
+        }
+
         String ext = "";
         int dotIndex = originalName.lastIndexOf(".");
         if (dotIndex != -1) {
@@ -187,4 +244,19 @@ Board board = Board.builder()
 
         @Transactional
         예외 발생시 롤백
+ */
+
+/*
+롤백 코드?
+        } catch (Exception e) {
+            // 파일 롤백
+            for (String savedFile : savedFiles) {
+                try {
+                    Files.deleteIfExists(
+                            Paths.get(filePathProperties.getBoard(), savedFile)
+                    );
+                } catch (IOException ignore) {}
+            }
+            throw e;
+        }
  */
